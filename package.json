@@ -1,0 +1,62 @@
+{
+  "name": "i18n-inspector",
+  "version": "0.1.1",
+  "description": "CLI tool to audit translation files for missing, empty, and mismatched keys across locales.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "test": "vitest",
+    "build": "tsc",
+    "prepublishOnly": "npm run test && npm run build"
+  },
+  "bin": {
+    "i18n-inspector": "dist/cli/index.js"
+  },
+  "keywords": [
+    "i18n",
+    "internationalization",
+    "localization",
+    "l10n",
+    "translation",
+    "cli",
+    "audit",
+    "missing-keys",
+    "next-intl",
+    "react-i18next",
+    "i18next"
+  ],
+  "author": "Pini Shteren",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PiniShterenNew/i18n-inspector.git"
+  },
+  "homepage": "https://github.com/PiniShterenNew/i18n-inspector#readme",
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "tsx": "^4.22.3",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.7"
+  },
+  "dependencies": {
+    "glob": "^13.0.6"
+  }
+}
