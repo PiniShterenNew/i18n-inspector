@@ -396,6 +396,72 @@ describe("loadLocales", () => {
     );
   });
 
+  it("loads a file with UTF-8 BOM successfully", async () => {
+    const dir = await createTempDirectory();
+
+    await mkdir(join(dir, "messages"));
+
+    await writeFile(
+      join(dir, "messages", "en.json"),
+      JSON.stringify({ greeting: "Hello" }),
+    );
+
+    // Write he.json with BOM prefix
+    const bomContent = "﻿" + JSON.stringify({ greeting: "Shalom" });
+    await writeFile(
+      join(dir, "messages", "he.json"),
+      bomContent,
+      "utf8",
+    );
+
+    const config: I18nCheckConfig = {
+      structure: "file-per-locale",
+      localesPath: "./messages",
+      sourceLocale: "en",
+      targetLocales: ["he"],
+    };
+
+    await expect(
+      loadLocales(config, dir),
+    ).resolves.toEqual({
+      en: { greeting: "Hello" },
+      he: { greeting: "Shalom" },
+    });
+  });
+
+  it("loads locale-directory files with UTF-8 BOM successfully", async () => {
+    const dir = await createTempDirectory();
+
+    await mkdir(join(dir, "locales", "en"), { recursive: true });
+    await mkdir(join(dir, "locales", "he"), { recursive: true });
+
+    await writeFile(
+      join(dir, "locales", "en", "common.json"),
+      JSON.stringify({ title: "Hello" }),
+    );
+
+    const bomContent = "﻿" + JSON.stringify({ title: "Shalom" });
+    await writeFile(
+      join(dir, "locales", "he", "common.json"),
+      bomContent,
+      "utf8",
+    );
+
+    const config: I18nCheckConfig = {
+      structure: "locale-directories",
+      localesPath: "./locales",
+      sourceLocale: "en",
+      targetLocales: ["he"],
+    };
+
+    await expect(
+      loadLocales(config, dir),
+    ).resolves.toEqual({
+      en: { title: "Hello" },
+      he: { title: "Shalom" },
+    });
+  });
+
   it.each([
     {
       name: "array",

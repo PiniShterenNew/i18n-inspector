@@ -12,6 +12,7 @@ export interface LocaleCheckResult {
   emptyKeys: string[];
   placeholderMismatch: number;
   placeholderMismatchKeys: string[];
+  arrayKeys: string[];
   coverage: number;
 }
 
@@ -63,6 +64,7 @@ export async function runCheck(
           result.placeholderMismatch.map(
             (issue) => issue.key,
           ),
+        arrayKeys: result.arrayKeys,
         coverage: result.coverage,
       };
     },

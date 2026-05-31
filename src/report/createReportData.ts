@@ -24,6 +24,7 @@ export interface ReportData {
   totalEmpty: number;
   totalUnknown: number;
   totalPlaceholderMismatch: number;
+  arrayWarnings: string[];
   locales: ReportLocaleResult[];
 }
 
@@ -38,7 +39,7 @@ function makeReportId(date: Date): string {
 
 export function createReportData(
   results: LocaleCheckResult[],
-  version = "0.1.0",
+  version = "0.0.0",
   generatedAt = new Date().toISOString(),
 ): ReportData {
   const date = new Date(generatedAt);
@@ -52,6 +53,7 @@ export function createReportData(
     totalEmpty: results.reduce((s, r) => s + r.empty, 0),
     totalUnknown: results.reduce((s, r) => s + r.extra, 0),
     totalPlaceholderMismatch: results.reduce((s, r) => s + r.placeholderMismatch, 0),
+    arrayWarnings: [...new Set(results.flatMap((r) => r.arrayKeys))].sort(),
     locales: results.map((result) => ({
       locale: result.locale,
       coverage: result.coverage,

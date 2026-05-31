@@ -1,11 +1,31 @@
+<p align="center">
+  <img src="docs/assets/logo.svg" alt="i18n-inspector" height="48" />
+</p>
+
 # i18n-inspector
 
 **Audit your JSON translation files for missing, empty, unknown, and broken keys.**
 
 A CLI tool that compares your source locale against every target locale and tells you exactly what is wrong — key by key. Outputs a colored terminal report and an optional interactive HTML report.
 
+---
+
+## Installation
+
 ```bash
 npm install -D i18n-inspector
+```
+
+```bash
+pnpm add -D i18n-inspector
+```
+
+```bash
+yarn add -D i18n-inspector
+```
+
+```bash
+bun add -d i18n-inspector
 ```
 
 ---
@@ -45,18 +65,24 @@ npx i18n-inspector --html
 
 Saves a self-contained HTML file to `./reports/`. Open it in any browser.
 
+<p align="center">
+  <img src="docs/assets/cli-report.png" alt="CLI audit report" width="740" />
+</p>
+
 ---
 
 ## Features
 
 - **Missing key detection** — keys in the source locale that are absent from a target
-- **Empty key detection** — keys that exist in the target but have an empty string value `""`
+- **Empty key detection** — keys that exist in the target but have an empty or whitespace-only value (`""`, `"   "`, `"\t"`)
 - **Unknown key detection** — keys in a target locale with no corresponding source key
 - **Placeholder validation** — detects when `{{ variable }}` placeholders differ between source and target
+- **Array warnings** — array-valued keys are detected and reported as warnings instead of being silently skipped
 - **Per-locale coverage %** — how much of the source is translated in each target locale
 - **HTML reports** — timestamped, self-contained, with search and collapsible key lists
 - **CI-friendly exit codes** — `0` clean, `1` issues found, `2` system error
 - **Auto-configuration** — `init` writes your config in one command
+- **BOM-tolerant** — UTF-8 BOM is stripped automatically before parsing
 
 ---
 
@@ -65,7 +91,7 @@ Saves a self-contained HTML file to `./reports/`. Open it in any browser.
 | Issue | What it means |
 |---|---|
 | **Missing keys** | Key exists in source, absent in target |
-| **Empty keys** | Key exists in target, value is `""` |
+| **Empty keys** | Key exists in target, value is `""` or whitespace-only |
 | **Unknown keys** | Key exists in target, absent in source |
 | **Placeholder mismatch** | `{{ variable }}` set differs between source and target |
 
@@ -102,8 +128,11 @@ Error: Config file not found.
 
   Expected: i18n-inspector.config.json
 
-  Run i18n-inspector init to create one automatically,
-  or create it manually. See --help for the format.
+  Next step:
+
+    npx i18n-inspector init
+
+  Or create it manually — see --help for the format.
 ```
 
 ### Invalid JSON in a locale file
@@ -174,7 +203,7 @@ Fix the JSON syntax and run again.
 |---|---|---|
 | Flat JSON | Supported | — |
 | Nested JSON | Supported | Flattened to dot-notation (`auth.login.title`) |
-| Arrays in JSON | **Not supported** | Silently ignored — see [Known Limitations](#known-limitations) |
+| Arrays in JSON | Detected and reported as warnings | Array keys do not affect coverage — see [Known Limitations](#known-limitations) |
 
 ### File structures
 
@@ -217,9 +246,9 @@ Fix the JSON syntax and run again.
 
 ## Known Limitations
 
-### 1. Arrays are silently ignored
+### 1. Arrays are detected but not compared
 
-JSON arrays are not scanned. A key whose value is an array will not appear in any comparison result — no missing, no unknown, no coverage impact.
+JSON arrays are not compared key-by-key. A key whose value is an array will appear as a **Warning** in the report, but it does not affect coverage, missing, or empty counts.
 
 ```json
 // en.json
@@ -229,7 +258,7 @@ JSON arrays are not scanned. A key whose value is an array will not appear in an
 {}
 ```
 
-Result: **no issue reported**. The `steps` key is invisible to the tool.
+Result: `steps` is reported as a **Warning** (array detected and skipped). No missing or coverage impact.
 
 ---
 
@@ -355,6 +384,10 @@ Each file includes:
 
 No server, no internet, no build step. Open the file in any browser.
 
+<p align="center">
+  <img src="docs/assets/html-report.png" alt="HTML audit report" width="740" />
+</p>
+
 ---
 
 ## CI Integration
@@ -414,11 +447,17 @@ No. The placeholder validator recognizes `{{ variable }}` (double curly braces) 
 **What happens if a translation file contains invalid JSON?**
 The audit stops immediately and prints the file path, line number, and column where the syntax error occurred. Fix the JSON and run again.
 
+**What happens if a translation file has a UTF-8 BOM?**
+The BOM is stripped automatically before parsing. Files created by Windows editors or certain tools load without error.
+
 **Does it support nested JSON?**
 Yes. Keys are flattened to dot-notation internally at any depth.
 
 **Does it support multiple namespaces?**
 Yes, via `locale-directories`. All JSON files inside a locale directory are merged before comparison.
+
+**Are whitespace-only values treated as empty?**
+Yes. Values containing only spaces, tabs, or newlines (e.g. `"   "`, `"\t"`) are treated as empty translations, the same as `""`.
 
 ---
 

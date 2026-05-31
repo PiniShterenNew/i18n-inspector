@@ -6,14 +6,14 @@ export const DIVIDER = gray("─".repeat(WIDTH));
 
 export function box(lines: string[]): string {
   const inner = WIDTH - 2;
-  const top    = "╔" + "═".repeat(inner) + "╗";
-  const bottom = "╚" + "═".repeat(inner) + "╝";
+  const top    = "╭" + "─".repeat(inner) + "╮";
+  const bottom = "╰" + "─".repeat(inner) + "╯";
   const rows = lines.map((line) => {
     const visible = stripAnsi(line);
     const pad = inner - visible.length;
     const left  = Math.floor(pad / 2);
     const right = pad - left;
-    return "║" + " ".repeat(left) + line + " ".repeat(right) + "║";
+    return "│" + " ".repeat(left) + line + " ".repeat(right) + "│";
   });
   return [top, ...rows, bottom].join("\n");
 }
@@ -22,7 +22,7 @@ export function header(): string {
   return box([
     "",
     bold(cyan("i18n-inspector")),
-    "Translation Consistency Checker",
+    "Translation Audit Toolkit",
     "",
   ]);
 }

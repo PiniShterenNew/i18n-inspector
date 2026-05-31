@@ -31,8 +31,8 @@ function esc(s: string): string {
 }
 
 function coverageClass(coverage: number): string {
-  if (coverage >= 99) return "good";
-  if (coverage >= 90) return "warn";
+  if (coverage >= 95) return "good";
+  if (coverage >= 80) return "warn";
   return "bad";
 }
 
@@ -64,7 +64,7 @@ function keyList(
       : "";
 
   return `
-    <details class="key-group" open>
+    <details class="key-group">
       <summary class="key-group-label ${cssClass}">
         ${esc(label)} <span class="key-count">${group.count}</span>
       </summary>
@@ -90,13 +90,13 @@ function localeCard(locale: ReportLocaleResult): string {
       ? `<div class="stat"><span class="stat-label">Missing</span><span class="stat-val bad">${locale.missing.count}</span></div>`
       : "",
     locale.empty.count > 0
-      ? `<div class="stat"><span class="stat-label">Empty</span><span class="stat-val warn">${locale.empty.count}</span></div>`
+      ? `<div class="stat stat-dim"><span class="stat-label">Empty</span><span class="stat-val warn">${locale.empty.count}</span></div>`
       : "",
     locale.extra.count > 0
-      ? `<div class="stat"><span class="stat-label">Unknown</span><span class="stat-val muted">${locale.extra.count}</span></div>`
+      ? `<div class="stat stat-dim"><span class="stat-label">Unknown</span><span class="stat-val muted">${locale.extra.count}</span></div>`
       : "",
     locale.placeholderMismatch.count > 0
-      ? `<div class="stat"><span class="stat-label">Placeholder mismatch</span><span class="stat-val warn">${locale.placeholderMismatch.count}</span></div>`
+      ? `<div class="stat stat-dim"><span class="stat-label">Placeholder mismatch</span><span class="stat-val warn">${locale.placeholderMismatch.count}</span></div>`
       : "",
   ].join("");
 
@@ -123,6 +123,40 @@ function localeCard(locale: ReportLocaleResult): string {
   </section>`;
 }
 
+// Inline icon SVG — slightly smaller than original (36×36 vs 44×44)
+const HEADER_ICON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="36" height="36" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="rpt-globe" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="100%" stop-color="#2563EB"/>
+    </linearGradient>
+    <linearGradient id="rpt-badge" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34D399"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <mask id="rpt-mask">
+      <rect width="200" height="200" fill="white"/>
+      <circle cx="155" cy="155" r="36" fill="black"/>
+    </mask>
+  </defs>
+  <g mask="url(#rpt-mask)">
+    <circle cx="100" cy="100" r="70" fill="none" stroke="url(#rpt-globe)" stroke-width="8"/>
+    <ellipse cx="100" cy="100" rx="30" ry="70" fill="none" stroke="url(#rpt-globe)" stroke-width="8"/>
+    <ellipse cx="100" cy="100" rx="70" ry="24" fill="none" stroke="url(#rpt-globe)" stroke-width="8"/>
+  </g>
+  <circle cx="155" cy="155" r="28" fill="url(#rpt-badge)"/>
+  <path d="M143 155L151 163L167 145" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
+
+const FAVICON_DATA_URL =
+  `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'>` +
+  `<circle cx='100' cy='100' r='70' fill='none' stroke='%2338bdf8' stroke-width='8'/>` +
+  `<ellipse cx='100' cy='100' rx='30' ry='70' fill='none' stroke='%2338bdf8' stroke-width='8'/>` +
+  `<ellipse cx='100' cy='100' rx='70' ry='24' fill='none' stroke='%2338bdf8' stroke-width='8'/>` +
+  `<circle cx='155' cy='155' r='28' fill='%2334d399'/>` +
+  `<path d='M143 155L151 163L167 145' fill='none' stroke='white' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/>` +
+  `</svg>`;
+
 const CSS = `
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -135,8 +169,8 @@ const CSS = `
     --text: #e2e8f0;
     --text-secondary: #94a3b8;
     --muted: #4b5675;
-    --good: #22c55e;
-    --good-bg: #052e16;
+    --good: #34d399;
+    --good-bg: #022c22;
     --warn: #f59e0b;
     --warn-bg: #2d1a03;
     --bad: #ef4444;
@@ -155,121 +189,173 @@ const CSS = `
     font-family: var(--font);
     font-size: 14px;
     line-height: 1.6;
-    padding: 2.5rem 1rem 4rem;
+    padding: 1.75rem 1rem 3rem;
     -webkit-font-smoothing: antialiased;
   }
 
   .container { max-width: 880px; margin: 0 auto; }
 
-  /* ── Branding header ── */
+  /* ── Header ── */
   .site-header {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    margin-bottom: 2rem;
-    padding-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
     border-bottom: 1px solid var(--border);
   }
-  .header-left {}
-  .site-brand {
+  .brand-group {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
-    margin-bottom: 0.25rem;
+    gap: 0.625rem;
   }
-  .site-title {
-    font-size: 1.25rem;
+  .brand-group svg { flex-shrink: 0; }
+  .brand-text { display: flex; flex-direction: column; gap: 0.05rem; }
+  .brand-name {
+    font-size: 1.125rem;
     font-weight: 700;
-    color: var(--accent);
+    color: var(--text);
     letter-spacing: -0.02em;
+    line-height: 1.25;
   }
-  .site-version {
-    font-size: 0.72rem;
-    font-weight: 500;
+  .brand-sub {
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    line-height: 1.3;
+  }
+  .brand-product {
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .brand-ver {
     color: var(--muted);
-    background: var(--surface-2);
-    border: 1px solid var(--border);
-    padding: 0.1rem 0.45rem;
-    border-radius: 4px;
-    letter-spacing: 0.02em;
     font-family: var(--mono);
-  }
-  .site-subtitle {
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--text-secondary);
+    font-size: 0.675rem;
   }
   .header-meta {
     text-align: right;
+  }
+  .meta-row {
+    font-size: 0.7rem;
+    color: var(--muted);
+    font-family: var(--mono);
+    white-space: nowrap;
+  }
+  .meta-label { color: var(--muted); margin-right: 0.3rem; }
+  .meta-value { color: var(--text-secondary); }
+  .meta-sep { opacity: 0.3; margin: 0 0.35rem; }
+
+  /* ── Status Banner ── */
+  .status-banner {
     display: flex;
     flex-direction: column;
     gap: 0.2rem;
-    align-items: flex-end;
+    padding: 0.875rem 1.25rem;
+    border-radius: var(--radius);
+    margin-bottom: 1.25rem;
   }
-  .meta-row {
-    font-size: 0.75rem;
-    color: var(--muted);
-    font-family: var(--mono);
+  .status-banner.pass {
+    background: var(--good-bg);
+    border: 1px solid #0d5c3a;
   }
-  .meta-label {
-    color: var(--muted);
-    margin-right: 0.4rem;
+  .status-banner.fail {
+    background: var(--bad-bg);
+    border: 1px solid #7f1d1d;
   }
-  .meta-value {
+  .status-title {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 1.0625rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    line-height: 1;
+  }
+  .status-banner.pass .status-title { color: var(--good); }
+  .status-banner.fail .status-title { color: var(--bad); }
+  .status-icon { font-size: 1rem; flex-shrink: 0; line-height: 1; }
+  .status-sub {
+    font-size: 0.8125rem;
+    font-weight: 500;
     color: var(--text-secondary);
+    padding-left: 0.1rem;
   }
 
-  /* ── Summary bar ── */
-  .summary-bar {
+  /* ── Summary Grid ── */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+  }
+  .summary-card {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 1.25rem 1.5rem;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 1rem 1.5rem;
-    align-items: center;
-    margin-bottom: 1.5rem;
+    padding: 0.625rem 0.875rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
   }
-  .summary-stat { display: flex; flex-direction: column; gap: 3px; }
-  .summary-label {
-    font-size: 0.7rem;
-    color: var(--muted);
+  .card-label {
+    font-size: 0.6rem;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    font-weight: 500;
+    font-weight: 600;
+    color: var(--muted);
   }
-  .summary-value { font-size: 1.2rem; font-weight: 700; color: var(--text); }
-  .summary-value.good { color: var(--good); }
-  .summary-value.warn { color: var(--warn); }
-  .summary-value.bad  { color: var(--bad); }
-  .summary-value.zero { color: var(--muted); }
-  .summary-status {
-    grid-column: -1;
-    display: flex;
-    justify-content: flex-end;
-  }
-  .badge {
-    padding: 0.3rem 0.85rem;
-    border-radius: 9999px;
-    font-size: 0.72rem;
+  .card-value {
+    font-size: 1.375rem;
     font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    color: var(--text);
+    line-height: 1;
+    font-family: var(--mono);
   }
-  .badge-pass { background: var(--good-bg); color: var(--good); border: 1px solid #166534; }
-  .badge-fail { background: var(--bad-bg);  color: var(--bad);  border: 1px solid #7f1d1d; }
+  .card-value.good  { color: var(--good); }
+  .card-value.warn  { color: var(--warn); }
+  .card-value.bad   { color: var(--bad); }
+  .card-value.muted { color: var(--text-secondary); }
+  .card-value.zero  { color: var(--muted); }
+
+  /* ── Warnings bar ── */
+  .warnings-bar {
+    background: var(--warn-bg);
+    border: 1px solid #78350f;
+    border-radius: var(--radius);
+    padding: 0.75rem 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+  .warnings-title {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--warn);
+    margin-bottom: 0.4rem;
+  }
+  .warnings-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+  .warnings-list li {
+    font-family: var(--mono);
+    font-size: 0.775rem;
+    color: var(--text-secondary);
+  }
+  .warnings-list li::before { content: "·  "; color: var(--warn); }
 
   /* ── Search ── */
-  .search-wrap { margin-bottom: 1.5rem; position: relative; }
+  .search-wrap { margin-bottom: 1rem; position: relative; }
   .search-icon {
     position: absolute;
     left: 0.875rem;
     top: 50%;
     transform: translateY(-50%);
     color: var(--muted);
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     pointer-events: none;
   }
   .search-input {
@@ -279,7 +365,7 @@ const CSS = `
     border-radius: var(--radius-sm);
     color: var(--text);
     font-size: 0.875rem;
-    padding: 0.625rem 1rem 0.625rem 2.5rem;
+    padding: 0.55rem 1rem 0.55rem 2.5rem;
     outline: none;
     transition: border-color 0.15s, background 0.15s;
   }
@@ -291,12 +377,12 @@ const CSS = `
 
   /* ── Section label ── */
   .section-label {
-    font-size: 0.7rem;
+    font-size: 0.625rem;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     font-weight: 600;
     color: var(--muted);
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
     padding-left: 0.25rem;
   }
 
@@ -305,7 +391,7 @@ const CSS = `
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    margin-bottom: 0.875rem;
+    margin-bottom: 0.625rem;
     overflow: hidden;
     transition: border-color 0.15s;
   }
@@ -316,14 +402,14 @@ const CSS = `
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.875rem 1.25rem;
+    padding: 0.625rem 1rem;
   }
-  .card-title { display: flex; align-items: center; gap: 0.625rem; }
+  .card-title { display: flex; align-items: center; gap: 0.5rem; }
   .locale-name { font-weight: 600; font-size: 0.9375rem; }
   .locale-badge {
-    padding: 0.125rem 0.5rem;
+    padding: 0.1rem 0.45rem;
     border-radius: 4px;
-    font-size: 0.65rem;
+    font-size: 0.625rem;
     font-weight: 700;
     letter-spacing: 0.07em;
     text-transform: uppercase;
@@ -333,8 +419,8 @@ const CSS = `
 
   .coverage-pill {
     font-weight: 700;
-    font-size: 1rem;
-    padding: 0.2rem 0.55rem;
+    font-size: 0.9375rem;
+    padding: 0.175rem 0.5rem;
     border-radius: var(--radius-sm);
     white-space: nowrap;
     font-family: var(--mono);
@@ -346,13 +432,14 @@ const CSS = `
   /* ── Progress bar ── */
   .coverage-row { padding: 0; }
   .progress-wrap {
-    height: 2px;
+    height: 3px;
     background: var(--border-subtle);
     width: 100%;
   }
   .progress-bar {
     height: 100%;
     transition: width 0.3s ease;
+    border-radius: 0 2px 2px 0;
   }
   .progress-bar.good { background: var(--good); }
   .progress-bar.warn { background: var(--warn); }
@@ -362,21 +449,27 @@ const CSS = `
   .stats-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 1.25rem;
-    padding: 0.75rem 1.25rem;
+    gap: 1rem;
+    padding: 0.5rem 1rem;
     border-top: 1px solid var(--border-subtle);
     background: var(--surface-2);
+    align-items: center;
   }
-  .stat { display: flex; gap: 0.4rem; align-items: center; font-size: 0.8125rem; }
+  .stat { display: flex; gap: 0.35rem; align-items: center; font-size: 0.8125rem; }
   .stat-label { color: var(--muted); }
   .stat-val { font-weight: 700; font-family: var(--mono); font-size: 0.875rem; }
   .stat-val.bad   { color: var(--bad); }
   .stat-val.warn  { color: var(--warn); }
   .stat-val.muted { color: var(--text-secondary); }
 
+  /* Secondary stats: empty, unknown, placeholder — less prominent than missing */
+  .stat.stat-dim { opacity: 0.72; }
+  .stat.stat-dim .stat-label { font-size: 0.75rem; }
+  .stat.stat-dim .stat-val { font-size: 0.8125rem; font-weight: 600; }
+
   /* ── Key groups ── */
   .keys-section {
-    padding: 0.75rem 1.25rem 1rem;
+    padding: 0.5rem 1rem 0.75rem;
     display: flex;
     flex-direction: column;
     gap: 0.375rem;
@@ -420,7 +513,6 @@ const CSS = `
     list-style: none;
     display: flex;
     flex-direction: column;
-    gap: 0;
     padding: 0.3rem 0.5rem 0.35rem 1.1rem;
   }
   .key-item {
@@ -438,32 +530,137 @@ const CSS = `
     font-family: var(--mono);
   }
 
+  /* ── About section ── */
+  .about-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-top: 1.25rem;
+    overflow: hidden;
+  }
+  .about-summary {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    user-select: none;
+  }
+  .about-summary::-webkit-details-marker { display: none; }
+  .about-summary::before {
+    content: "▶";
+    font-size: 0.55rem;
+    opacity: 0.4;
+    transition: transform 0.15s;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+  .about-section[open] > .about-summary::before { transform: rotate(90deg); }
+  .about-summary:hover { color: var(--text); }
+  .about-body {
+    padding: 0 1.25rem 1.25rem;
+    border-top: 1px solid var(--border-subtle);
+  }
+  .about-body h3 {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+    color: var(--muted);
+    margin: 1rem 0 0.5rem;
+  }
+  .about-body p {
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+  }
+  .about-body pre {
+    font-family: var(--mono);
+    font-size: 0.775rem;
+    color: var(--text);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.625rem 0.875rem;
+    margin: 0.4rem 0 0.75rem;
+    overflow-x: auto;
+  }
+  .about-body ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: 0;
+  }
+  .about-body ul li {
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    padding-left: 1rem;
+    position: relative;
+  }
+  .about-body ul li::before {
+    content: "·";
+    position: absolute;
+    left: 0;
+    color: var(--muted);
+  }
+  .about-body strong { color: var(--text); font-weight: 600; }
+
+  /* ── Footer ── */
+  .report-footer {
+    margin-top: 2rem;
+    padding-top: 0.875rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    text-align: center;
+  }
+  .footer-brand {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+  .footer-brand a { color: var(--accent); text-decoration: none; }
+  .footer-brand a:hover { text-decoration: underline; }
+  .footer-meta {
+    font-size: 0.675rem;
+    color: var(--muted);
+    font-family: var(--mono);
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .footer-sep { opacity: 0.35; }
+
   /* ── Utility ── */
   .good  { color: var(--good); }
   .warn  { color: var(--warn); }
   .bad   { color: var(--bad); }
   .muted { color: var(--muted); }
 
-  /* ── Footer ── */
-  .report-footer {
-    margin-top: 3rem;
-    padding-top: 1.25rem;
-    border-top: 1px solid var(--border);
-    text-align: center;
-    font-size: 0.75rem;
-    color: var(--muted);
-  }
-  .report-footer a { color: var(--muted); text-decoration: none; }
-  .report-footer a:hover { color: var(--text-secondary); }
-
   /* ── Responsive ── */
+  @media (max-width: 720px) {
+    .summary-grid { grid-template-columns: repeat(3, 1fr); }
+  }
   @media (max-width: 640px) {
-    body { padding: 1.5rem 0.75rem 3rem; }
-    .site-header { flex-direction: column; }
-    .header-meta { text-align: left; align-items: flex-start; }
-    .summary-bar { grid-template-columns: repeat(2, 1fr); }
-    .summary-status { grid-column: span 2; justify-content: flex-start; }
-    .card-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+    body { padding: 1.25rem 0.75rem 2.5rem; }
+    .site-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+    .header-meta { text-align: left; }
+    .meta-row { white-space: normal; }
+    .card-header { flex-direction: column; align-items: flex-start; gap: 0.4rem; }
+  }
+  @media (max-width: 400px) {
+    .summary-grid { grid-template-columns: repeat(2, 1fr); }
   }
 `;
 
@@ -481,88 +678,139 @@ const JS = `
   });
 `;
 
+function warningsBar(arrayWarnings: string[]): string {
+  if (arrayWarnings.length === 0) return "";
+  const items = arrayWarnings
+    .map((k) => `<li>${esc(k)}</li>`)
+    .join("\n        ");
+  return `
+    <div class="warnings-bar">
+      <div class="warnings-title">⚠ Arrays detected and skipped</div>
+      <ul class="warnings-list">
+        ${items}
+      </ul>
+    </div>`;
+}
+
+function statusBanner(report: ReportData): string {
+  const failedLocales = report.locales.filter(
+    (l) => l.missing.count > 0 || l.empty.count > 0 || l.placeholderMismatch.count > 0,
+  );
+  if (failedLocales.length === 0) {
+    const n = report.localesChecked;
+    return `
+  <div class="status-banner pass">
+    <div class="status-title">
+      <span class="status-icon">✓</span>
+      <span>AUDIT PASSED</span>
+    </div>
+    <div class="status-sub">All ${n} locale${n !== 1 ? "s" : ""} passed</div>
+  </div>`;
+  }
+  const f = failedLocales.length;
+  const t = report.localesChecked;
+  return `
+  <div class="status-banner fail">
+    <div class="status-title">
+      <span class="status-icon">✗</span>
+      <span>AUDIT FAILED</span>
+    </div>
+    <div class="status-sub">${f} of ${t} locale${t !== 1 ? "s" : ""} contain issues</div>
+  </div>`;
+}
+
+function summaryGrid(report: ReportData): string {
+  const covClass = coverageClass(report.averageCoverage);
+  const missingClass = report.totalMissing > 0 ? "bad" : "zero";
+  const emptyClass = report.totalEmpty > 0 ? "warn" : "zero";
+  const unknownClass = report.totalUnknown > 0 ? "muted" : "zero";
+  const warningsClass = report.arrayWarnings.length > 0 ? "warn" : "zero";
+
+  return `
+  <div class="summary-grid">
+    <div class="summary-card">
+      <div class="card-label">Locales</div>
+      <div class="card-value">${report.localesChecked}</div>
+    </div>
+    <div class="summary-card">
+      <div class="card-label">Avg Coverage</div>
+      <div class="card-value ${covClass}">${report.averageCoverage}%</div>
+    </div>
+    <div class="summary-card">
+      <div class="card-label">Missing</div>
+      <div class="card-value ${missingClass}">${report.totalMissing}</div>
+    </div>
+    <div class="summary-card">
+      <div class="card-label">Empty</div>
+      <div class="card-value ${emptyClass}">${report.totalEmpty}</div>
+    </div>
+    <div class="summary-card">
+      <div class="card-label">Unknown</div>
+      <div class="card-value ${unknownClass}">${report.totalUnknown}</div>
+    </div>
+    <div class="summary-card">
+      <div class="card-label">Array Warnings</div>
+      <div class="card-value ${warningsClass}">${report.arrayWarnings.length}</div>
+    </div>
+  </div>`;
+}
+
+function aboutSection(): string {
+  return `
+  <details class="about-section">
+    <summary class="about-summary">About this report</summary>
+    <div class="about-body">
+      <h3>Coverage formula</h3>
+      <pre>coverage = (source keys − missing − empty) / source keys × 100%</pre>
+      <p>Coverage measures how completely each target locale represents the source locale.</p>
+
+      <h3>Lowers coverage</h3>
+      <ul>
+        <li><strong>Missing</strong> — key exists in source, absent in target</li>
+        <li><strong>Empty</strong> — key exists in target, value is empty or whitespace-only</li>
+      </ul>
+
+      <h3>Does not affect coverage</h3>
+      <ul>
+        <li><strong>Unknown</strong> — extra keys in target with no matching source key</li>
+        <li><strong>Placeholder mismatches</strong> — {{ variable }} sets differ between source and target</li>
+        <li><strong>Array warnings</strong> — keys with array values (detected but not compared)</li>
+      </ul>
+    </div>
+  </details>`;
+}
+
+function reportFooter(version: string, generated: string, reportId: string): string {
+  return `
+  <footer class="report-footer">
+    <div class="footer-brand">
+      Generated by <a href="https://github.com/PiniShterenNew/i18n-inspector" target="_blank" rel="noopener noreferrer">i18n-inspector</a>
+    </div>
+    <div class="footer-meta">
+      <span>v${esc(version)}</span>
+      <span class="footer-sep">·</span>
+      <span>${esc(generated)}</span>
+      <span class="footer-sep">·</span>
+      <span>ID: ${esc(reportId)}</span>
+    </div>
+  </footer>`;
+}
+
 export function generateHtmlReport(report: ReportData): string {
   const now = new Date(report.generatedAt);
   const generated =
     now.toISOString().replace("T", " ").slice(0, 16) + " UTC";
 
-  const covClass = coverageClass(report.averageCoverage);
-
-  const failed = report.locales.some(
-    (l) =>
-      l.missing.count > 0 ||
-      l.empty.count > 0 ||
-      l.placeholderMismatch.count > 0,
-  );
-
-  const totalMissingClass = report.totalMissing > 0 ? "bad" : "zero";
-  const totalEmptyClass = report.totalEmpty > 0 ? "warn" : "zero";
-  const totalUnknownClass = report.totalUnknown > 0 ? "warn" : "zero";
-  const totalPlaceholderClass = report.totalPlaceholderMismatch > 0 ? "warn" : "zero";
-
   const cards = report.locales.map(localeCard).join("\n");
 
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>i18n-inspector Report — ${esc(generated)}</title>
-  <style>${CSS}</style>
-</head>
-<body>
-  <div class="container">
+  const showSearch = report.localesChecked >= 4;
+  const showLocaleCount = report.localesChecked > 1;
+  const sectionLabel = showLocaleCount
+    ? `Locales (${report.localesChecked})`
+    : "Locale";
 
-    <header class="site-header">
-      <div class="header-left">
-        <div class="site-brand">
-          <span class="site-title">i18n-inspector</span>
-          <span class="site-version">v${esc(report.version)}</span>
-        </div>
-        <div class="site-subtitle">Translation Audit Report</div>
-      </div>
-      <div class="header-meta">
-        <div class="meta-row">
-          <span class="meta-label">Generated</span>
-          <span class="meta-value">${esc(generated)}</span>
-        </div>
-        <div class="meta-row">
-          <span class="meta-label">Report ID</span>
-          <span class="meta-value">${esc(report.reportId)}</span>
-        </div>
-      </div>
-    </header>
-
-    <div class="summary-bar">
-      <div class="summary-stat">
-        <span class="summary-label">Locales</span>
-        <span class="summary-value">${report.localesChecked}</span>
-      </div>
-      <div class="summary-stat">
-        <span class="summary-label">Coverage</span>
-        <span class="summary-value ${covClass}">${report.averageCoverage}%</span>
-      </div>
-      <div class="summary-stat">
-        <span class="summary-label">Missing</span>
-        <span class="summary-value ${totalMissingClass}">${report.totalMissing}</span>
-      </div>
-      <div class="summary-stat">
-        <span class="summary-label">Empty</span>
-        <span class="summary-value ${totalEmptyClass}">${report.totalEmpty}</span>
-      </div>
-      <div class="summary-stat">
-        <span class="summary-label">Unknown</span>
-        <span class="summary-value ${totalUnknownClass}">${report.totalUnknown}</span>
-      </div>
-      <div class="summary-stat">
-        <span class="summary-label">Placeholder</span>
-        <span class="summary-value ${totalPlaceholderClass}">${report.totalPlaceholderMismatch}</span>
-      </div>
-      <div class="summary-status">
-        <span class="badge ${failed ? "badge-fail" : "badge-pass"}">${failed ? "Failed" : "Passed"}</span>
-      </div>
-    </div>
-
+  const searchHtml = showSearch
+    ? `
     <div class="search-wrap">
       <span class="search-icon">⌕</span>
       <input
@@ -573,18 +821,59 @@ export function generateHtmlReport(report: ReportData): string {
         autocomplete="off"
         spellcheck="false"
       />
-    </div>
+    </div>`
+    : "";
 
-    <div class="section-label">Locales (${report.localesChecked})</div>
+  const scriptHtml = showSearch ? `<script>${JS}</script>` : "";
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Translation Audit Report — ${esc(generated)}</title>
+  <link rel="icon" type="image/svg+xml" href="${FAVICON_DATA_URL}" />
+  <style>${CSS}</style>
+</head>
+<body>
+  <div class="container">
+
+    <header class="site-header">
+      <div class="brand-group">
+        ${HEADER_ICON}
+        <div class="brand-text">
+          <div class="brand-name">Translation Audit Report</div>
+          <div class="brand-sub">
+            <span class="brand-product">i18n-inspector</span>
+            <span class="brand-ver">v${esc(report.version)}</span>
+          </div>
+        </div>
+      </div>
+      <div class="header-meta">
+        <div class="meta-row">
+          <span class="meta-label">Generated</span><span class="meta-value">${esc(generated)}</span><span class="meta-sep">·</span><span class="meta-label">ID</span><span class="meta-value">${esc(report.reportId)}</span>
+        </div>
+      </div>
+    </header>
+
+    ${statusBanner(report)}
+
+    ${summaryGrid(report)}
+
+    ${warningsBar(report.arrayWarnings)}
+
+    ${searchHtml}
+
+    <div class="section-label">${sectionLabel}</div>
 
     ${cards}
 
-    <footer class="report-footer">
-      Generated by <a href="https://github.com/PiniShterenNew/i18n-inspector" target="_blank" rel="noopener">i18n-inspector</a> v${esc(report.version)}
-    </footer>
+    ${aboutSection()}
+
+    ${reportFooter(report.version, generated, report.reportId)}
 
   </div>
-  <script>${JS}</script>
+  ${scriptHtml}
 </body>
 </html>`;
 }

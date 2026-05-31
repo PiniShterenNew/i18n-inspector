@@ -83,8 +83,8 @@ function printLocale(locale: ReportLocaleResult): void {
 }
 
 function coverageColor(coverage: number): (s: string) => string {
-  if (coverage >= 99) return green;
-  if (coverage >= 90) return yellow;
+  if (coverage >= 95) return green;
+  if (coverage >= 80) return yellow;
   return red;
 }
 
@@ -129,8 +129,24 @@ export function printReport(report: ReportData): void {
       l.placeholderMismatch.count > 0,
   );
 
-  console.log(`Status: ${failed ? bold(red("FAILED")) : bold(green("PASSED"))}`);
+  console.log(failed
+    ? bold(red(`${CROSS} FAILED`))
+    : bold(green(`${CHECK} PASSED`)));
   console.log("");
+
+  if (report.arrayWarnings.length > 0) {
+    console.log(DIVIDER);
+    console.log("");
+    console.log(`${bold(yellow("⚠"))} ${bold("Warnings")}`);
+    console.log("");
+    console.log(`  ${yellow("⚠")} ${yellow("Arrays detected and skipped")}  ${dim(`(${report.arrayWarnings.length})`)}`);
+    console.log("");
+    for (const key of report.arrayWarnings) {
+      console.log(`    ${dim("·")} ${key}`);
+    }
+    console.log("");
+  }
+
   console.log(DIVIDER);
   console.log("");
 }

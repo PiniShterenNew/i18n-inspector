@@ -1,5 +1,6 @@
-import { flattenObject } from "./flattenObject.js";
+import { flattenObject, collectArrayKeys } from "./flattenObject.js";
 import { comparePlaceholders } from "./placeholders.js";
+import type { PlaceholderMismatch } from "./placeholders.js";
 import type { CompareLocalesResult, TranslationIssue } from "../types/index.js"
 
 export function compareLocales(
@@ -16,7 +17,12 @@ export function compareLocales(
     const missing: TranslationIssue[] = [];
     const extra: TranslationIssue[] = [];
     const empty: TranslationIssue[] = [];
-    const placeholderMismatch = [];
+    const placeholderMismatch: PlaceholderMismatch[] = [];
+
+    const sourceArrayKeys = collectArrayKeys(source);
+    const targetArrayKeys = collectArrayKeys(target);
+    const arrayKeySet = new Set([...sourceArrayKeys, ...targetArrayKeys]);
+    const arrayKeys = [...arrayKeySet].sort();
 
     for (const key of sourceKeys) {
         if (!targetKeys.has(key)) {
@@ -31,7 +37,7 @@ export function compareLocales(
         const sourceValue = flatSource[key]!;
         const targetValue = flatTarget[key]!;
 
-        if (targetValue === "") {
+        if (targetValue.trim() === "") {
             empty.push({
                 key,
                 sourceValue,
@@ -84,6 +90,7 @@ export function compareLocales(
         extra,
         empty,
         placeholderMismatch,
+        arrayKeys,
         totalKeys,
         coverage
     };

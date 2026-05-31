@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { flattenObject } from "../src/core/flattenObject.js";
+import { flattenObject, collectArrayKeys } from "../src/core/flattenObject.js";
 
 describe("flattenObject", () => {
     it("should return empty object for empty input", () => {
@@ -196,5 +196,47 @@ describe("flattenObject", () => {
             "dashboard.charts.expenses": "Expenses",
             "profile.settings.language": "Language"
         });
+    });
+});
+
+describe("collectArrayKeys", () => {
+    it("should return empty array when no arrays present", () => {
+        expect(collectArrayKeys({ title: "Home" })).toEqual([]);
+    });
+
+    it("should detect a top-level array", () => {
+        const result = collectArrayKeys({ steps: ["one", "two"] });
+        expect(result).toEqual(["steps"]);
+    });
+
+    it("should detect a nested array", () => {
+        const result = collectArrayKeys({ onboarding: { steps: ["one", "two"] } });
+        expect(result).toEqual(["onboarding.steps"]);
+    });
+
+    it("should detect multiple arrays", () => {
+        const result = collectArrayKeys({
+            steps: ["a"],
+            wizard: { pages: ["b", "c"] },
+        });
+        expect(result).toContain("steps");
+        expect(result).toContain("wizard.pages");
+        expect(result).toHaveLength(2);
+    });
+
+    it("should not collect plain objects or strings as arrays", () => {
+        const result = collectArrayKeys({
+            title: "Home",
+            nested: { subtitle: "Sub" },
+        });
+        expect(result).toHaveLength(0);
+    });
+
+    it("should return sorted keys", () => {
+        const result = collectArrayKeys({
+            z: ["last"],
+            a: ["first"],
+        });
+        expect(result).toEqual(["a", "z"]);
     });
 });
