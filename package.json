@@ -1,6 +1,6 @@
 {
   "name": "i18n-inspector",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "CLI tool to audit translation files for missing, empty, and mismatched keys across locales.",
   "type": "module",
   "main": "./dist/index.js",
