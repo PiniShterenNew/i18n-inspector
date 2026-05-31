@@ -308,6 +308,163 @@ describe("nested translations", () => {
     });
 });
 
+describe("whitespace-only empty detection", () => {
+    it("should treat whitespace-only value as empty", () => {
+        const source = { title: "Home" };
+        const target = { title: "   " };
+
+        const result = compareLocales(source, target);
+
+        expect(result.empty).toHaveLength(1);
+        expect(result.empty[0]!.key).toBe("title");
+    });
+
+    it("should treat tab-only value as empty", () => {
+        const source = { title: "Home" };
+        const target = { title: "\t" };
+
+        const result = compareLocales(source, target);
+
+        expect(result.empty).toHaveLength(1);
+    });
+
+    it("should treat newline-only value as empty", () => {
+        const source = { title: "Home" };
+        const target = { title: "\n" };
+
+        const result = compareLocales(source, target);
+
+        expect(result.empty).toHaveLength(1);
+    });
+
+    it("should not count whitespace-only as translated in coverage", () => {
+        const source = { title: "Home" };
+        const target = { title: "   " };
+
+        const result = compareLocales(source, target);
+
+        expect(result.coverage).toBe(0);
+    });
+
+    it("should not treat value with real content and surrounding whitespace as empty", () => {
+        const source = { title: "Home" };
+        const target = { title: " בית " };
+
+        const result = compareLocales(source, target);
+
+        expect(result.empty).toHaveLength(0);
+        expect(result.missing).toHaveLength(0);
+    });
+});
+
+describe("array detection warnings", () => {
+    it("should detect top-level array in source", () => {
+        const source = { steps: ["one", "two"] as unknown as string };
+        const target = { steps: ["אחד", "שתיים"] as unknown as string };
+
+        const result = compareLocales(
+            source as unknown as Record<string, unknown>,
+            target as unknown as Record<string, unknown>,
+        );
+
+        expect(result.arrayKeys).toContain("steps");
+    });
+
+    it("should detect nested array key", () => {
+        const source = {
+            onboarding: { steps: ["one", "two"] }
+        } as unknown as Record<string, unknown>;
+        const target = {} as Record<string, unknown>;
+
+        const result = compareLocales(source, target);
+
+        expect(result.arrayKeys).toContain("onboarding.steps");
+    });
+
+    it("should not report array key as missing", () => {
+        const source = {
+            steps: ["one", "two"],
+            title: "Home",
+        } as unknown as Record<string, unknown>;
+        const target = { title: "בית" } as Record<string, unknown>;
+
+        const result = compareLocales(source, target);
+
+        expect(result.missing.map((i) => i.key)).not.toContain("steps");
+        expect(result.arrayKeys).toContain("steps");
+    });
+
+    it("should return empty arrayKeys when no arrays present", () => {
+        const source = { title: "Home" };
+        const target = { title: "בית" };
+
+        const result = compareLocales(source, target);
+
+        expect(result.arrayKeys).toHaveLength(0);
+    });
+
+    it("should detect arrays in target that are not in source", () => {
+        const source = { title: "Home" } as Record<string, unknown>;
+        const target = {
+            title: "בית",
+            extras: ["a", "b"],
+        } as unknown as Record<string, unknown>;
+
+        const result = compareLocales(source, target);
+
+        expect(result.arrayKeys).toContain("extras");
+    });
+});
+
+describe("placeholder spacing robustness", () => {
+    it("should treat {{name}} and {{ name }} as the same placeholder", () => {
+        const source = { title: "Hello {{name}}" };
+        const target = { title: "שלום {{ name }}" };
+
+        const result = compareLocales(source, target);
+
+        expect(result.placeholderMismatch).toHaveLength(0);
+    });
+
+    it("should treat {{ user.name }} with spaces as valid", () => {
+        const source = { title: "Hello {{ user.name }}" };
+        const target = { title: "שלום {{ user.name }}" };
+
+        const result = compareLocales(source, target);
+
+        expect(result.placeholderMismatch).toHaveLength(0);
+    });
+
+    it("should detect mismatch between {{name}} and {{userName}}", () => {
+        const source = { title: "Hello {{name}}" };
+        const target = { title: "שלום {{userName}}" };
+
+        const result = compareLocales(source, target);
+
+        expect(result.placeholderMismatch).toHaveLength(1);
+        expect(result.placeholderMismatch[0]!.sourcePlaceholders).toEqual(["name"]);
+        expect(result.placeholderMismatch[0]!.targetPlaceholders).toEqual(["userName"]);
+    });
+
+    it("should handle multiple placeholders with mixed spacing", () => {
+        const source = { title: "{{firstName}} {{lastName}}" };
+        const target = { title: "{{ firstName }} {{ lastName }}" };
+
+        const result = compareLocales(source, target);
+
+        expect(result.placeholderMismatch).toHaveLength(0);
+    });
+
+    it("should deduplicate repeated placeholders", () => {
+        const source = { title: "{{name}} and {{name}} again" };
+        const target = { title: "{{name}} ו-{{name}} שוב" };
+
+        const result = compareLocales(source, target);
+
+        expect(result.placeholderMismatch).toHaveLength(0);
+    });
+});
+
 describe("real world locale audit", () => {
     it("should audit a realistic locale file", () => {
         const source = {

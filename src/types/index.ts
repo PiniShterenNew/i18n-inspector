@@ -11,6 +11,7 @@ export interface CompareLocalesResult {
     extra: TranslationIssue[];
     empty: TranslationIssue[];
     placeholderMismatch: PlaceholderMismatch[];
+    arrayKeys: string[];
 
     totalKeys: number;
     coverage: number;

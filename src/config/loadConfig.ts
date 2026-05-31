@@ -22,8 +22,9 @@ export async function loadConfig(
     throw new Error(
       "Config file not found.\n\n" +
       "  Expected: i18n-inspector.config.json\n\n" +
-      "  Run i18n-inspector init to create one automatically,\n" +
-      "  or create it manually. See --help for the format.",
+      "  Next step:\n\n" +
+      "    npx i18n-inspector init\n\n" +
+      "  Or create it manually — see --help for the format.",
     );
   }
 

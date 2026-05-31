@@ -55,6 +55,7 @@ function makeReport(
     totalEmpty: results.reduce((s, r) => s + r.empty.count, 0),
     totalUnknown: results.reduce((s, r) => s + r.extra.count, 0),
     totalPlaceholderMismatch: results.reduce((s, r) => s + r.placeholderMismatch.count, 0),
+    arrayWarnings: [],
     locales: results,
   };
 }
@@ -173,6 +174,33 @@ describe("printReport", () => {
     const lines = loggedLines(log);
     expect(lines.some((l) => l.includes("home.title"))).toBe(true);
     expect(lines.some((l) => l.includes("home.subtitle"))).toBe(true);
+  });
+
+  it("prints array warnings when present", () => {
+    const log = vi
+      .spyOn(console, "log")
+      .mockImplementation(() => {});
+
+    const report = makeReport([{ locale: "he", coverage: 100 }]);
+    report.arrayWarnings = ["onboarding.steps", "wizard.pages"];
+
+    printReport(report);
+
+    const lines = loggedLines(log);
+    expect(lines.some((l) => l.includes("Arrays detected and skipped"))).toBe(true);
+    expect(lines.some((l) => l.includes("onboarding.steps"))).toBe(true);
+    expect(lines.some((l) => l.includes("wizard.pages"))).toBe(true);
+  });
+
+  it("does not print warnings section when no arrays", () => {
+    const log = vi
+      .spyOn(console, "log")
+      .mockImplementation(() => {});
+
+    printReport(makeReport([{ locale: "he", coverage: 100 }]));
+
+    const lines = loggedLines(log);
+    expect(lines.some((l) => l.includes("Arrays detected"))).toBe(false);
   });
 
   it("truncates key list at 20 and shows overflow count", () => {

@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" width="100%" height="100%">
+  <title>i18n-inspector Full Logo</title>
+
+  <defs>
+    <style>
+      .text-color { fill: #0F172A; }
+      .sub-color { fill: #64748B; }
+      @media (prefers-color-scheme: dark) {
+        .text-color { fill: #F8FAFC; }
+        .sub-color { fill: #94A3B8; }
+      }
+    </style>
+
+    <linearGradient id="globeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="100%" stop-color="#2563EB" />
+    </linearGradient>
+
+    <linearGradient id="badgeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34D399" />
+      <stop offset="100%" stop-color="#059669" />
+    </linearGradient>
+
+    <mask id="badge-mask">
+      <rect x="0" y="0" width="800" height="200" fill="white" />
+      <circle cx="155" cy="155" r="36" fill="black" />
+    </mask>
+  </defs>
+
+  <g mask="url(#badge-mask)">
+    <circle cx="100" cy="100" r="70" fill="none" stroke="url(#globeGrad)" stroke-width="8" />
+    <ellipse cx="100" cy="100" rx="30" ry="70" fill="none" stroke="url(#globeGrad)" stroke-width="8" />
+    <ellipse cx="100" cy="100" rx="70" ry="24" fill="none" stroke="url(#globeGrad)" stroke-width="8" />
+  </g>
+
+  <g>
+    <circle cx="155" cy="155" r="28" fill="url(#badgeGrad)" />
+    <path d="M 143 155 L 151 163 L 167 145" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+  </g>
+
+  <text x="210" y="115" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="800" letter-spacing="-2">
+    <tspan class="text-color">i18n</tspan>
+    <tspan fill="url(#badgeGrad)">-inspector</tspan>
+  </text>
+
+  <text x="215" y="152" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="16" font-weight="600" class="sub-color" letter-spacing="3">
+    LOCALIZATION INSPECTOR
+  </text>
+</svg>

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <title>i18n-inspector</title>
+
+  <defs>
+    <linearGradient id="globeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="100%" stop-color="#2563EB" />
+    </linearGradient>
+
+    <linearGradient id="badgeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34D399" />
+      <stop offset="100%" stop-color="#059669" />
+    </linearGradient>
+  </defs>
+
+  <!-- Globe (no mask — badge overlaps intentionally at small sizes) -->
+  <circle cx="100" cy="100" r="70" fill="none" stroke="url(#globeGrad)" stroke-width="8" />
+  <ellipse cx="100" cy="100" rx="30" ry="70" fill="none" stroke="url(#globeGrad)" stroke-width="8" />
+  <ellipse cx="100" cy="100" rx="70" ry="24" fill="none" stroke="url(#globeGrad)" stroke-width="8" />
+
+  <!-- Check badge -->
+  <circle cx="155" cy="155" r="28" fill="url(#badgeGrad)" />
+  <path d="M 143 155 L 151 163 L 167 145" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+</svg>

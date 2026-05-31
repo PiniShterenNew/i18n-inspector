@@ -27,3 +27,24 @@ function walk(
 function isPlainObject(value: unknown): value is Record<string, unknown> {
     return typeof value === "object" && value !== null && !Array.isArray(value);
 }
+
+export function collectArrayKeys(obj: Record<string, unknown>): string[] {
+    const result: string[] = [];
+    walkArrays(obj, "", result);
+    return result.sort();
+}
+
+function walkArrays(
+    obj: Record<string, unknown>,
+    path: string,
+    result: string[],
+): void {
+    for (const [key, value] of Object.entries(obj)) {
+        const fullPath = path ? `${path}.${key}` : key;
+        if (Array.isArray(value)) {
+            result.push(fullPath);
+        } else if (isPlainObject(value)) {
+            walkArrays(value, fullPath, result);
+        }
+    }
+}

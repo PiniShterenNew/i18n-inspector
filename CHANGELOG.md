@@ -7,6 +7,47 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [0.1.2] — 2026-05-31
+
+Hardening / Reliability Release — no new features. Strengthens the existing core, reduces edge-case failures, and expands test coverage.
+
+### Fixed
+
+- Whitespace-only values (e.g. `"   "`, `"\t"`, `"\n"`) are now correctly treated as empty translations, consistent with `""`
+- UTF-8 BOM (`﻿`) is stripped before JSON parsing, enabling files created by Windows editors and certain tools to load without error
+- `placeholderMismatch` array in `compareLocales` now carries an explicit `PlaceholderMismatch[]` type annotation (was inferred `any[]`)
+
+### Improved
+
+- Array values in locale files are now detected and reported as warnings instead of being silently skipped
+  - Warnings appear in the terminal report under a dedicated **Warnings** section
+  - Warnings appear in the HTML report as a styled notice above the locale cards
+  - Array keys do not affect coverage, missing, or empty counts — they are informational only
+- `collectArrayKeys` is exported from `flattenObject` as a tested public utility
+- Expanded edge-case test coverage:
+  - Whitespace-only empty detection (space, tab, newline variants)
+  - UTF-8 BOM handling in both `file-per-locale` and `locale-directories` modes
+  - Array detection in source, target, and nested positions
+  - Placeholder spacing variations (`{{name}}` vs `{{ name }}` vs `{{ user.name }}`)
+  - Duplicate placeholder deduplication
+- CLI help screen now opens with a **Quick Start** section (3-step onboarding) before the command reference
+- `--help` examples updated to use `npx i18n-inspector` for clarity
+- `init` success message now shows `npx i18n-inspector` as the next step
+- Config-not-found error now shows a clear `Next step: npx i18n-inspector init` prompt
+- HTML report success output now shows a prominent **Open:** path block
+- README updated to reflect 0.1.2 behaviour: arrays as warnings, whitespace-only empty detection, BOM handling, multi-package-manager installation
+- HTML report redesigned with brand-aligned colours (derived from project SVG assets):
+  - Prominent **status banner** (pass/fail) displayed before all other content
+  - **Summary dashboard** replaced flat stat row with six labelled cards (Locales Checked, Average Coverage, Missing, Empty, Unknown, Array Warnings)
+  - Inline **favicon** (browser tab icon) using the project icon
+  - **About this report** collapsible section explaining the coverage formula and what does/does not affect it
+  - Progress bars and coverage pills now use brand-green (`#34d399`) matching the logo check badge
+  - Professional footer with version, timestamp, report ID, and GitHub repository link
+- Project branding assets added to `docs/assets/`: `icon.svg`, `logo.svg`, `favicon.svg`
+- README logo updated from placeholder comment to `<img>` referencing `docs/assets/logo.svg`
+
+---
+
 ## [0.1.0] — 2026-05-30
 
 ### Initial release

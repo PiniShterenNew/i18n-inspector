@@ -134,10 +134,8 @@ async function readJsonFile(
   path: string,
   displayPath: string,
 ): Promise<Record<string, unknown>> {
-  const content = await readFile(
-    path,
-    "utf8",
-  );
+  const raw = await readFile(path, "utf8");
+  const content = raw.charCodeAt(0) === 0xfeff ? raw.slice(1) : raw;
 
   let parsed: unknown;
 

@@ -13,7 +13,7 @@ import { createReportData } from "../report/createReportData.js";
 import { generateHtmlReport } from "../report/htmlReport.js";
 import { printReport } from "../report/printReport.js";
 import { bold, cyan, dim, green } from "../ui/colors.js";
-import { DIVIDER } from "../ui/fmt.js";
+import { DIVIDER, CHECK, header } from "../ui/fmt.js";
 
 const require = createRequire(import.meta.url);
 
@@ -22,7 +22,7 @@ function getVersion(): string {
     const pkg = require("../../package.json") as { version: string };
     return pkg.version;
   } catch {
-    return "0.1.0";
+    return "0.0.0";
   }
 }
 
@@ -38,9 +38,16 @@ function makeReportFilename(date: Date): string {
 const VERSION = getVersion();
 
 const HELP = `
-${bold(cyan("i18n-inspector"))} ${dim(`v${VERSION}`)} — Translation Consistency Checker
+${header()}
+  ${dim(`v${VERSION}`)}
 
-${bold("Usage:")}
+${bold("Quick Start:")}
+
+  ${bold(cyan("npx i18n-inspector init"))}
+  ${bold(cyan("npx i18n-inspector"))}
+  ${bold(cyan("npx i18n-inspector --html"))}
+
+${bold("Commands:")}
 
   i18n-inspector              Run audit against all target locales
   i18n-inspector init         Auto-detect locale structure and create config
@@ -50,13 +57,13 @@ ${bold("Usage:")}
 ${bold("Examples:")}
 
   # First-time setup
-  i18n-inspector init
+  npx i18n-inspector init
 
   # Run audit
-  i18n-inspector
+  npx i18n-inspector
 
   # Run audit and save the HTML report
-  i18n-inspector --html
+  npx i18n-inspector --html
 
 ${bold("Exit codes:")}
 
@@ -111,9 +118,12 @@ export async function runCli(
         await mkdir(reportsDir, { recursive: true });
         const html = generateHtmlReport(report);
         await writeFile(outPath, html, "utf8");
-        console.log(
-          `${green("✔")} HTML report saved: ${cyan(bold(`./reports/${filename}`))}`,
-        );
+        console.log(DIVIDER);
+        console.log("");
+        console.log(`${green(CHECK)} ${bold("HTML report generated")}`);
+        console.log("");
+        console.log(`  ${bold("Open:")}  ${bold(cyan(`./reports/${filename}`))}`);
+        console.log("");
         console.log(DIVIDER);
         console.log("");
       }

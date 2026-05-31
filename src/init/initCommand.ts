@@ -2,7 +2,7 @@ import { detectLocaleRoots } from "./detectLocaleRoots.js";
 import { buildConfig } from "./buildConfig.js";
 import { writeConfig } from "./writeConfig.js";
 import { bold, cyan, green, red, dim } from "../ui/colors.js";
-import { DIVIDER, CHECK, header } from "../ui/fmt.js";
+import { DIVIDER, CHECK, CROSS, header } from "../ui/fmt.js";
 
 export async function initCommand(): Promise<void> {
   console.log("");
@@ -15,7 +15,7 @@ export async function initCommand(): Promise<void> {
 
   if (candidates.length === 0) {
     console.log("");
-    console.log(red("✗ No locale structure detected."));
+    console.log(`${red(CROSS)} No locale structure detected.`);
     console.log("");
     console.log("  Expected one of:");
     console.log("");
@@ -42,7 +42,7 @@ export async function initCommand(): Promise<void> {
 
   if (candidates.length > 1) {
     console.log("");
-    console.log(red("✗ Multiple locale roots found."));
+    console.log(`${red(CROSS)} Multiple locale roots found.`);
     console.log("");
     console.log("  i18n-inspector found more than one set of translation files:");
     console.log("");
@@ -71,7 +71,7 @@ export async function initCommand(): Promise<void> {
     config = buildConfig(candidate);
   } catch {
     console.log("");
-    console.log(red("✗ Could not determine source locale."));
+    console.log(`${red(CROSS)} Could not determine source locale.`);
     console.log("");
     console.log("  i18n-inspector could not identify which locale is the source.");
     console.log("  It automatically selects \"en\" as the source when present.");
@@ -117,9 +117,9 @@ export async function initCommand(): Promise<void> {
   console.log("File:");
   console.log(`  ${cyan(displayPath)}`);
   console.log("");
-  console.log("Next step:");
+  console.log(bold(cyan("Next step:")));
   console.log("");
-  console.log(`  ${bold("i18n-inspector")}`);
+  console.log(`  ${bold("npx i18n-inspector")}`);
   console.log("");
   console.log(DIVIDER);
   console.log("");
